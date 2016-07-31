@@ -4,11 +4,13 @@ import (
   "io"
   "log"
   "net/http"
+  "os"
   "os/exec"
 )
 
 func main() {
   if !checkPrereqs() {
+    os.Exit(1)
     return
   }
 
