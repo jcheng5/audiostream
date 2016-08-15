@@ -6,13 +6,13 @@ import (
 )
 
 func checkPrereqs() bool {
-  if !installed("mpg123") {
-    log.Fatal("mpg123 not installed; try `brew install mpg123`")
+  if !installed("sox") {
+    log.Fatal("sox not installed; try `apt install sox`")
     return false
   }
   return true
 }
 
 func createCommand() *exec.Cmd {
-  return exec.Command("mpg123", "-")
+  return exec.Command("sox", "-d", "-t", "wav", "-")
 }

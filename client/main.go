@@ -44,7 +44,7 @@ func main() {
   }
 
   received := make(chan []byte)
-  buf := make([]byte, 4*1024)
+  buf := make([]byte, 1024)
 
   // Start a goroutine for copying byte slices from "received"
   // and dropping them into stdin
