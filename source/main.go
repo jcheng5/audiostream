@@ -1,12 +1,18 @@
 package main
 
 import (
+  "encoding/binary"
   "io"
   "log"
-  "net/http"
+  "net"
   "os"
   "os/exec"
 )
+
+func installed(prog string) bool {
+  cmd := exec.Command("which", prog)
+  return cmd.Run() == nil
+}
 
 func main() {
   if !checkPrereqs() {
@@ -14,53 +20,49 @@ func main() {
     return
   }
 
-  log.Fatal(http.ListenAndServe(":8080", http.HandlerFunc(handler)))
-}
-
-func installed(prog string) bool {
-  cmd := exec.Command("which", prog)
-  return cmd.Run() == nil
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-  log.Println("Client " + r.RemoteAddr + " connected")
-
-  w.Header().Add("Content-Type", "audio/mpeg")
-
   cmd := createCommand()
 
   mp3data, err := cmd.StdoutPipe()
   if err != nil {
     log.Println("Failed to get pipe")
-    w.WriteHeader(500)
     return
   }
 
   err = cmd.Start()
   if err != nil {
     log.Println("Failed to start program")
-    w.WriteHeader(500)
     return
   }
+  defer cmd.Process.Kill()
 
-  cn, ok := w.(http.CloseNotifier)
-  if !ok {
-    log.Println("Failed to cast response to CloseNotifier")
-    w.WriteHeader(500)
+  addr, err := net.ResolveUDPAddr("udp", "[ff00::78]:2011")
+  if err != nil {
+    log.Println("Failed to resolve multicast group address")
     return
   }
+  conn, err := net.DialUDP("udp", nil, addr)
+  if err != nil {
+    log.Println("Error creating udp connection: ", err)
+    return
+  }
+  defer conn.Close()
 
-  closeNotifyChan := cn.CloseNotify()
-  go func() {
-    for {
-      <-closeNotifyChan
-      cmd.Process.Kill()
+  var counter uint64 = 0
+  buf := make([]byte, 512 + 8)
+  for {
+    binary.PutUvarint(buf[0:8], counter)
+    _, err = io.ReadFull(mp3data, buf[8:])
+    if err != nil {
+      // TODO: Restart?
+      return
     }
-  }()
-
-  io.Copy(w, mp3data)
+    _, err = conn.Write(buf)
+    if err != nil {
+      log.Println("Failure on write: ", err)
+      return
+    }
+    counter++
+  }
 
   cmd.Wait()
-
-  log.Println("Client " + r.RemoteAddr + " disconnected")
 }
