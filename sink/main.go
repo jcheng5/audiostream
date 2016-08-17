@@ -20,9 +20,9 @@ func main() {
     return
   }
 
-  log.Println("Joining group ff00::78")
+  log.Println("Joining group 224.0.0.118:200")
 
-  addr, err := net.ResolveUDPAddr("udp", "[ff00::78]:2011")
+  addr, err := net.ResolveUDPAddr("udp", "224.0.0.118:200")
   if err != nil {
     log.Println("Failed to resolve multicast group address")
     return
