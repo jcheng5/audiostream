@@ -1,7 +1,7 @@
-all: bin/server bin/client
+all: bin/source bin/sink
 
-bin/server: server/*.go
-	go build -o bin/server ./server
+bin/source: source/*.go
+	go build -o bin/source ./source
 
-bin/client: client/*.go
-	go build -o bin/client ./client
+bin/sink: sink/*.go
+	go build -o bin/sink ./sink

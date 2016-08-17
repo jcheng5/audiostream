@@ -20,7 +20,7 @@ func main() {
   }
 
   if len(os.Args) < 2 {
-    log.Fatal("Usage: client <url>")
+    log.Fatal("Usage: sink <url>")
   }
 
   url := os.Args[1]
