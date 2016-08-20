@@ -48,7 +48,7 @@ func main() {
   defer conn.Close()
 
   var counter uint64 = 0
-  buf := make([]byte, 512 + 8)
+  buf := make([]byte, 8192 + 8)
   for {
     binary.PutUvarint(buf[0:8], counter)
     _, err = io.ReadFull(mp3data, buf[8:])

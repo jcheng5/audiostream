@@ -14,5 +14,5 @@ func checkPrereqs() bool {
 }
 
 func createCommand() *exec.Cmd {
-  return exec.Command("sox", "-", "-d")
+  return exec.Command("sox", "-t", "wav", "-", "-d")
 }

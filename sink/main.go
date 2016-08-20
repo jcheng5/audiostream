@@ -20,7 +20,7 @@ func main() {
     return
   }
 
-  log.Println("Joining group 224.0.0.118:200")
+  log.Println("Joining group 224.0.0.118:2016")
 
   addr, err := net.ResolveUDPAddr("udp", "224.0.0.118:2016")
   if err != nil {
@@ -45,13 +45,18 @@ func main() {
   if err != nil {
     log.Fatal(err)
   }
+  stderr, err := cmd.StderrPipe()
+  if err != nil {
+    log.Fatal(err)
+  }
+  go io.Copy(os.Stderr, stderr)
   err = cmd.Start()
   if err != nil {
     log.Fatal(err)
   }
 
   received := make(chan []byte)
-  buf := make([]byte, 1024)
+  buf := make([]byte, 10000)
 
   // Start a goroutine for copying byte slices from "received"
   // and dropping them into stdin
@@ -62,7 +67,7 @@ func main() {
   // and writes the results to the "received" channel
   for {
     count, _, err := conn.ReadFromUDP(buf)
-    log.Println("Received")
+    //log.Println("Received")
     if count > 0 {
       counter, n := binary.Uvarint(buf[0:8])
       if n <= 0 {
@@ -71,6 +76,9 @@ func main() {
       if maxCounter >= counter {
         log.Println("Packet out of order: ", counter, " <= ", maxCounter)
       } else {
+        if counter != maxCounter + 1 {
+          log.Println("Skipped", (counter - maxCounter), "packets")
+        }
         maxCounter = counter
       }
 
