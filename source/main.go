@@ -35,7 +35,7 @@ func main() {
   }
   defer cmd.Process.Kill()
 
-  addr, err := net.ResolveUDPAddr("udp", "224.0.0.118:200")
+  addr, err := net.ResolveUDPAddr("udp", "224.0.0.118:2016")
   if err != nil {
     log.Println("Failed to resolve multicast group address")
     return
